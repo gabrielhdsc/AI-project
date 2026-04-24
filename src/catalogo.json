@@ -1,0 +1,26 @@
+{
+    "servico": {
+        "nome": "Banho para Cães",
+        "preco": "R$ 60,00 (Pequeno porte) | R$ 80,00 (Médio) | R$ 100,00 (Grande)",
+        "vantagens": "Banho com shampoo hipoalergênico, secagem, limpeza de ouvidos e corte de unhas.",
+        "regras": "Atendemos apenas com agendamento prévio. Obrigatório apresentar carteira de vacinação em dia. Não aceitamos cães com histórico de agressividade extrema sem focinheira.",
+        "beneficios_para_venda": "Usamos toalhas esterilizadas, água em temperatura controlada e secador silencioso para reduzir o estresse do animal.",
+        "objecoes_comuns": {
+            "ta_caro": "Nosso valor inclui limpeza de ouvidos e corte de unhas, além de produtos hipoalergênicos que evitam problemas de pele no seu pet, economizando com veterinário no futuro.",
+            "meu_cachorro_tem_medo": "Nossa equipe é treinada em manejo calmo (fear-free) e o ambiente é preparado para ser o menos estressante possível."
+        }
+    },
+
+
+"produto_racao": {
+        "nome": "Ração Super Premium (Pacote 15kg)",
+        "marca": "Gold",
+        "preco": "R$ 180,00",
+        "promocao_atual": "Na compra da ração, ganha 10% de desconto no primeiro banho.",
+        "regras": "Entrega grátis em num raio de 5km. Acima disso, taxa fixa de R$ 10,00.",
+        "beneficios_para_venda": "Ração rica em ômega 3 e 6 para pelos brilhantes, extrato de yucca que reduz o odor das fezes e sem corantes artificiais.",
+        "objecoes_comuns": {
+            "meu_cachorro_nao_come_qualquer_uma": "Essa linha tem alta palatabilidade, desenvolvida especificamente para cães exigentes."
+        }
+    }
+}
