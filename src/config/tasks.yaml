@@ -1,0 +1,17 @@
+task_sales:
+  description: >
+    Catálogo da loja: {catalogo}.
+    O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
+    Baseado no catálogo e no seu papel, responda o cliente.
+  expected_output: >
+    Uma mensagem curta com formatação de WhatsApp, com asteriscos para negrito, emojis moderados, 
+    respondendo às dúvidas e finalizando com uma pergunta para continuar a venda
+
+
+task_follow_up:
+  description: >
+    O cliente parou de responder após falarmos sobre: "{last_topic}".
+    Gere uma mensagem para ele.
+  expected_output: >
+    Uma mensagem curta (máx 2 linhas), amigável e com pergunta simples para reengajar.
+    Use senso de urgência leve. Nunca recomece a conversa do zero, continue do assunto anterior.
