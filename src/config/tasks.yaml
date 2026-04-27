@@ -10,7 +10,7 @@ task_sales:
 
 task_follow_up:
   description: >
-    O cliente parou de responder após falarmos sobre: "{ultimo_assunto}".
+    O cliente parou de responder após falarmos sobre: "{last_topic}".
     Gere uma mensagem para ele.
   expected_output: >
     Uma mensagem curta (máx 2 linhas), amigável e com pergunta simples para reengajar.
