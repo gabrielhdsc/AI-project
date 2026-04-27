@@ -6,7 +6,7 @@ def task_sales(event_data):
     return Task(
         description=configs_tasks['task_sales']['description'].format(
         catalogo=catalogo_str,
-        mensagem=event_data["mensagem"]),
+        message=event_data["mensagem"]),
         expected_output=configs_tasks['task_sales']['expected_output'],
         agent=salesperson
     )

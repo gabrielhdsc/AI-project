@@ -1,7 +1,7 @@
 task_sales:
   description: >
     Catálogo da loja: {catalogo}.
-    O cliente enviou a seguinte mensagem no WhatsApp: "{mensagem}".
+    O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
     Baseado no catálogo e no seu papel, responda o cliente.
   expected_output: >
     Uma mensagem curta com formatação de WhatsApp, com asteriscos para negrito, emojis moderados, 
