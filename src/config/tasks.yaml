@@ -1,6 +1,7 @@
 task_sales:
   description: >
     Catálogo da loja: {catalogo}.
+    Hisórico da conversa com este cliente até agora {history}
     O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
     Baseado no catálogo e no seu papel, responda o cliente.
   expected_output: >
@@ -10,8 +11,12 @@ task_sales:
 
 task_follow_up:
   description: >
-    O cliente parou de responder após falarmos sobre: "{last_topic}".
-    Gere uma mensagem para ele.
+    O cliente parou de responder faz 24 horas. 
+    Aqui está o histórico da conversa até o momento:
+    {history}
+    
+    Baseado na última interação do cliente, gere uma mensagem para ele.
+    
   expected_output: >
     Uma mensagem curta (máx 2 linhas), amigável e com pergunta simples para reengajar.
     Use senso de urgência leve. Nunca recomece a conversa do zero, continue do assunto anterior.
