@@ -21,9 +21,11 @@ def send_message(message, history):
     
 
     text_history = ""
-    for msg in history:
+    # Define a "context windown" of the 10 last messages (5 user + 5 assistant)
+    for msg in history[10:]:
         if msg["role"] == "user":
             text_history += f"Cliente: {msg['content']}\n"
+
         elif msg["role"] == "assistant":
             if "⏳ [SISTEMA" not in msg["content"]:
                 text_history += f"Vendedor: {msg['content']}\n"
@@ -73,7 +75,7 @@ def activate_followup(history):
     ai_response = str(orchestrate("lead_inativo", event))
     
     # Bot initiates the message (no user role)
-    updated_history = history + {"role": "assistant", "content": f"⏳ [SISTEMA: Disparo de Follow-up]\n\n{ai_response}"}
+    updated_history = history + [{"role": "assistant", "content": f"⏳ [SISTEMA: Disparo de Follow-up]\n\n{ai_response}"}]
     
     # Return updated chatbot UI visor
     return updated_history
