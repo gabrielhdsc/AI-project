@@ -21,6 +21,12 @@ with open('src/config/agents.yaml', 'r', encoding='utf-8') as f:
 with open('src/config/tasks.yaml', 'r', encoding='utf-8') as f:
     configs_tasks = yaml.safe_load(f)
 
-
+# Declare agents defined in agents.yaml
+classifier = Agent(config=configs_agents['classifier'], llm=llm)
+support = Agent(config=configs_agents['support'], llm=llm)
 salesperson = Agent(config=configs_agents['sales'], llm=llm)
-followup = Agent(config=configs_agents['follow-up'], llm=llm)
+post_sales = Agent(config=configs_agents['post_sales'], llm=llm)
+
+
+# Pet shop infos
+info_store = "Horário de funcionamento: Seg-Sex 08h às 18h. Endereço: Rua dos Pets, 123. Trocas de produtos apenas em até 7 dias."

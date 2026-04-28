@@ -1,92 +1,109 @@
+# Define the interface
+# Triggers events in the orchestrador based on the users messages
+
 import gradio as gr
 from orchestrador import orchestrate
 
 def send_message(message, history):
     """
     Process new incoming user message (Main conversation Route).
-
-    Parameters:
-    - message: str -> user input from textbox
-    - history: list -> conversation history stored in gr.State
-
-    Returns:
-    - empty string to clear textbox
-    - updated history for Chatbot UI
-    - updated history for State (source of truth)
+    Triggered when the user send a message
     """
     
-    # User sends empty message = do nothing
+    # User sends empty message, do nothing
     if not message:
         return "", history
     
+    # Slice the history array to get only the last 10 interactions. Define a "context window" of the 10 last messages (5 user + 5 assistant)
+    # This keeps the AI context relevant for chats of message apps
+    context_window = history[-6:]
 
     text_history = ""
-    # Define a "context windown" of the 10 last messages (5 user + 5 assistant)
-    for msg in history[10:]:
+    for msg in context_window:
         if msg["role"] == "user":
             text_history += f"Cliente: {msg['content']}\n"
 
         elif msg["role"] == "assistant":
+            # Ignore system logs so it does not confuse the Sales Agent
             if "⏳ [SISTEMA" not in msg["content"]:
                 text_history += f"Vendedor: {msg['content']}\n"
 
 
-    # Build event for orchestrator and call AI orchestration layer that calls sales task and agent
-    event = {"mensagem": message, "history":text_history}
-    ai_response = str(orchestrate("nova_mensagem", event))
+    # Build event and send to the orchestrator. Call AI orchestration defining an event of type "new_message"
+    event = {"message": message, "history":text_history}
+    ai_response = str(orchestrate("new_message", event))
     
     
-    # Handoff handling by intercepting a specific tag that transfer to a human
+    # UI checks if the AI decided to call a human
+    # if the tag is present it is intercepted that transfer to a human. visual system alert
     if "[HANDOFF]" in ai_response:
         ai_response = "🚨 Atendimento humano acionado. Aguarde por favor"
 
-    # DO NOT mutate the existing list. Create a new one (User message, bot answer)
+    # Append the new user message and the AI response to the UI history
+    # DO NOT mutate the existing list. Create a new one (User message, assistant answer)
     updated_history = history + [
         {"role": "user", "content": message},
         {"role": "assistant", "content": ai_response}
     ]
     
-    # Return an empty string (to clear the user's Textbox), updated chatbot UI visor
+    # Return an empty string (to clear the user's Textbox) and the updated chatbot UI.
     return "", updated_history
 
 
 def activate_followup(history):
     """
     Simulates a CRM-triggered warning when the lead becomes inactive (Follow-up Route).
-
-    Parameters:
-    - history: list -> current conversation history
-
-    Returns:
-    - updated history for Chatbot UI
-    - updated history for State
+    Triggered by the testing panel button.
     """
-    
+
+    context_window = history[-6:]
+
     text_history = ""
-    for msg in history:
+    for msg in context_window:
         if msg["role"] == "user":
             text_history += f"Cliente: {msg['content']}\n"
         elif msg["role"] == "assistant":
             if "⏳ [SISTEMA" not in msg["content"]:
                 text_history += f"Vendedor: {msg['content']}\n"
 
-    # Define the context/payload for the orchestrator
-    event = {"history": text_history}
-    ai_response = str(orchestrate("lead_inativo", event))
     
-    # Bot initiates the message (no user role)
+    # Define the context for the orchestrator and call it with the specific event
+    event = {"history": text_history} # No message in the event. The user didn't need to type anything
+    ai_response = str(orchestrate("inactive_lead", event))
+    
+    # Bot initiates the message (no user role). Added visual tag to show it was a system trigger
     updated_history = history + [{"role": "assistant", "content": f"⏳ [SISTEMA: Disparo de Follow-up]\n\n{ai_response}"}]
     
     # Return updated chatbot UI visor
     return updated_history
 
 
+def activate_post_sales(history):
+    """
+    Simulates a CRM trigger after a service is concluded to check client satisfaction.
+    """
+
+    context_window = history[-6:]
+
+    text_history = ""
+    for msg in context_window: 
+        if msg["role"] == "user":
+            text_history += f"Cliente: {msg['content']}\n"
+        elif msg["role"] == "assistant" and "⏳ [SISTEMA" not in msg["content"]:
+            text_history += f"Vendedor: {msg['content']}\n"
+
+    event = {"history": text_history}
+    ai_response = str(orchestrate("post_sales", event))
+    
+    updated_history = history + [{"role": "assistant", "content": f"⏳ [SISTEMA: Disparo de Pós-Venda]\n\n{ai_response}"}]
+    return updated_history
+
 
 # INTERFACE CONSTRUCTION (Gradio Blocks)
 
 def build_interface():
     """
-    Builds and returns the Gradio interface.
+    Builds the visual layout and binds the events (clicks/submits) to the Python functions.
     """
 
     #theme Soft provides a modern, user-friendly UI instead of the default terminal look
@@ -108,12 +125,15 @@ def build_interface():
             
         gr.Markdown("---")
         
+
         # Testing panel (simulating CRM behavior)
         gr.Markdown("### ⚙️ Painel de Testes do Sistema")
         inactive_button = gr.Button("Simular: Cliente inativo há 24h (Disparar Follow-up)")
+        post_sales_button = gr.Button("Simular: Serviço Concluído (Pós-Venda) ")
 
 
-        # Buttons actions (event bindings)
+        # Event bindings - UI interactions to the functions (Buttons actions)
+        # "inputs" are variables passed to the function, "outputs" are the UI components that get updated. 
 
         # user presses Enter inside the textbox
         message_box.submit(
@@ -136,4 +156,9 @@ def build_interface():
             outputs=[chatbot]
         )
 
+        post_sales_button.click(
+            activate_post_sales, 
+            inputs=[chatbot], 
+            outputs=[chatbot]
+        )
     return interface
