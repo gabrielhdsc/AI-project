@@ -1,12 +1,33 @@
+# Define specif instructions for a given moment, jobs and expected outputs (What they do)
+# Contains dynamic fields filled with conversation data
+
+task_classifier:
+  description: >
+    Histórico da conversa: {history}
+    Nova mensagem do cliente: "{message}"
+
+    Sua tarefa é descobrir o que o cliente quer. 
+    1. Se ele só disse "Oi", cumprimente e pergunte como pode ajudar.
+    2. Se ele expressou intenção de comprar/agendar, direcione para "vendas".
+    3. Se ele tem uma dúvida de horário, entrega ou reclamação, direcione para "suporte".
+    4. Se o cliente xingar, for agressivo ou pedir explicitamente para falar com um humano, direcione para "human".
+  expected_output: >
+    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra, com a seguinte estrutura:
+    {{
+      "msg_to_client": "Sua resposta amigável aqui (ou deixe em branco se for passar direto para outro agente)",
+      "next_agent": "classifier" | "sales" | "support" | "human"
+    }}
+
+
 task_sales:
   description: >
-    Catálogo da loja: {catalogo}.
-    Hisórico da conversa com este cliente até agora {history}
+    Catálogo da loja: {catalog}.
+    Hisórico da conversa com este cliente até agora: {history}
     O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
-    Baseado no catálogo e no seu papel, responda o cliente.
+    Baseado no catálogo, contorne objeções se houver e conduza o cliente para o fechamento da compra ou agendamento do serviço.
   expected_output: >
-    Uma mensagem curta com formatação de WhatsApp, com asteriscos para negrito, emojis moderados, 
-    respondendo às dúvidas e finalizando com uma pergunta para continuar a venda
+    Uma mensagem persuasiva com formatação de WhatsApp (asteriscos para negrito, uso de emojis bem moderados), 
+    focada em destacar o valor do serviço/produto e finalizando com um CTA (Call to Action) claro para fechar a venda.
 
 
 task_follow_up:
@@ -14,9 +35,28 @@ task_follow_up:
     O cliente parou de responder faz 24 horas. 
     Aqui está o histórico da conversa até o momento:
     {history}
-    
     Baseado na última interação do cliente, gere uma mensagem para ele.
-    
   expected_output: >
     Uma mensagem curta (máx 2 linhas), amigável e com pergunta simples para reengajar.
     Use senso de urgência leve. Nunca recomece a conversa do zero, continue do assunto anterior.
+
+
+task_support:
+  description: >
+    Informações da loja: {info_store}
+    Histórico da conversa: {history}
+    Mensagem do cliente: "{message}"
+    O cliente tem uma dúvida operacional ou problema. Responda com clareza e empatia.
+  expected_output: >
+    Uma mensagem prestativa resolvendo a dúvida. Sem tentar vender produtos. 
+    Se for uma reclamação grave ou algo fora do seu conhecimento, insira a tag [HANDOFF].
+
+
+task_post_sales:
+  description: >
+    O serviço/venda foi concluído recentemente.
+    Histórico da conversa: {history}
+    Sua tarefa é fazer o acompanhamento (pós-venda) para garantir a satisfação.
+  expected_output: >
+    Uma mensagem carinhosa perguntando como o pet se adaptou ao produto ou se gostou do serviço. 
+    Termine com uma pergunta leve para manter a conversa aberta.
