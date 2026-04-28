@@ -19,9 +19,22 @@ def send_message(message, history):
     if not message:
         return "", history
     
+
+    text_history = ""
+    # Define a "context windown" of the 10 last messages (5 user + 5 assistant)
+    for msg in history[10:]:
+        if msg["role"] == "user":
+            text_history += f"Cliente: {msg['content']}\n"
+
+        elif msg["role"] == "assistant":
+            if "⏳ [SISTEMA" not in msg["content"]:
+                text_history += f"Vendedor: {msg['content']}\n"
+
+
     # Build event for orchestrator and call AI orchestration layer that calls sales task and agent
-    event = {"mensagem": message}
+    event = {"mensagem": message, "history":text_history}
     ai_response = str(orchestrate("nova_mensagem", event))
+    
     
     # Handoff handling by intercepting a specific tag that transfer to a human
     if "[HANDOFF]" in ai_response:
@@ -29,11 +42,12 @@ def send_message(message, history):
 
     # DO NOT mutate the existing list. Create a new one (User message, bot answer)
     updated_history = history + [
-    {"role": "user", "content": message},
-    {"role": "assistant", "content": ai_response}]
+        {"role": "user", "content": message},
+        {"role": "assistant", "content": ai_response}
+    ]
     
-    # Return an empty string (to clear the user's Textbox), updated chatbot UI visor and updated state
-    return "", updated_history, updated_history
+    # Return an empty string (to clear the user's Textbox), updated chatbot UI visor
+    return "", updated_history
 
 
 def activate_followup(history):
@@ -48,16 +62,23 @@ def activate_followup(history):
     - updated history for State
     """
     
+    text_history = ""
+    for msg in history:
+        if msg["role"] == "user":
+            text_history += f"Cliente: {msg['content']}\n"
+        elif msg["role"] == "assistant":
+            if "⏳ [SISTEMA" not in msg["content"]:
+                text_history += f"Vendedor: {msg['content']}\n"
+
     # Define the context/payload for the orchestrator
-    event = {"ultimo_assunto": "Banho para Poodle / Ração"}
-    resposta_ia = str(orchestrate("lead_inativo", event))
+    event = {"history": text_history}
+    ai_response = str(orchestrate("lead_inativo", event))
     
     # Bot initiates the message (no user role)
-    updated_history = history + [
-    {"role": "assistant", "content": f"⏳ *Follow-up automático*\n\n{resposta_ia}"}]    
+    updated_history = history + [{"role": "assistant", "content": f"⏳ [SISTEMA: Disparo de Follow-up]\n\n{ai_response}"}]
     
-    # Return updated chatbot UI visor and updated state (no need to clean Textbox)
-    return updated_history, updated_history
+    # Return updated chatbot UI visor
+    return updated_history
 
 
 
@@ -72,12 +93,9 @@ def build_interface():
     with gr.Blocks(theme=gr.themes.Soft()) as interface:
         
         gr.Markdown("## 📱🐶 Assistente Comercial de Pet Shop para Apps de Mensagem")
-
-        # This is the TRUE source of conversation state. It persists across user interactions
-        state = gr.State([])
         
         # Chat display component (UI only, not source of truth)
-        chatbot = gr.Chatbot(height=450, label="Atendimento", type="messages")
+        chatbot = gr.Chatbot(height=450, label="Atendimento")
         
         # User input area
         with gr.Row():
@@ -100,22 +118,22 @@ def build_interface():
         # user presses Enter inside the textbox
         message_box.submit(
             send_message, 
-            inputs=[message_box, state], 
-            outputs=[message_box, chatbot, state]
+            inputs=[message_box, chatbot], 
+            outputs=[message_box, chatbot]
         )
         
         # user presses the Send button
         send_button.click(
             send_message, 
-            inputs=[message_box, state], 
-            outputs=[message_box, chatbot, state]
+            inputs=[message_box, chatbot], 
+            outputs=[message_box, chatbot]
         )
         
         # user presses the Follou-up button
         inactive_button.click(
             activate_followup, 
-            inputs=[state], 
-            outputs=[chatbot, state]
+            inputs=[chatbot], 
+            outputs=[chatbot]
         )
 
     return interface
