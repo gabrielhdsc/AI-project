@@ -2,7 +2,7 @@
 # It instantiates the Tasks by formatting the strings from the YAML file with dynamic data
 
 from crewai import Task
-from settings import configs_tasks, catalogo_str, salesperson, classifier, support, post_sales, info_store
+from settings import configs_tasks, salesperson, classifier, support, post_sales, info_store
 
 
 def task_classifier(event_data):
@@ -24,7 +24,6 @@ def task_classifier(event_data):
 def task_sales(event_data):
     return Task(
         description=configs_tasks['task_sales']['description'].format(
-            catalog=catalogo_str, # Injects the store catalog data into {catalog}
             history=event_data.get("history", "Nenhuma conversa anterior, este é o primeiro contato"),
             message=event_data.get("message", "")
         ),
