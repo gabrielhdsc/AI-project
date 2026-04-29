@@ -21,10 +21,15 @@ task_classifier:
 
 task_sales:
   description: >
-    Catálogo da loja: {catalog}.
     Hisórico da conversa com este cliente até agora: {history}
     O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
-    Baseado no catálogo, contorne objeções se houver e conduza o cliente para o fechamento da compra ou agendamento do serviço.
+    Baseado no seu papel e no seu histórico, contorne objeções se houver e conduza o cliente para o fechamento da compra ou agendamento do serviço.
+    Se o cliente perguntar sobre produtos ou preços, use sua ferramenta de pesquisa antes de responder.
+
+    Ajuste o tom com base no contexto:
+    - Se o cliente está explorando: seja leve e informativo
+    - Se está decidido: seja direto e objetivo
+    - Se está inseguro: seja acolhedor e explicativo
   expected_output: >
     Uma mensagem persuasiva com formatação de WhatsApp (asteriscos para negrito, uso de emojis bem moderados), 
     focada em destacar o valor do serviço/produto e finalizando com um CTA (Call to Action) claro para fechar a venda.
