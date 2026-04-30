@@ -31,8 +31,11 @@ task_sales:
     - Se está decidido: seja direto e objetivo
     - Se está inseguro: seja acolhedor e explicativo
   expected_output: >
-    Uma mensagem persuasiva com formatação de WhatsApp (asteriscos para negrito, uso de emojis bem moderados), 
-    focada em destacar o valor do serviço/produto e finalizando com um CTA (Call to Action) claro para fechar a venda.
+    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra, com a seguinte estrutura:
+    {{
+      "mensagem": Uma mensagem persuasiva com formatação de WhatsApp (asteriscos para negrito, uso de emojis bem moderados), focada em destacar o valor do serviço/produto e finalizando com um CTA (Call to Action) claro para fechar a venda.
+      "transferir_para": null ou "nome_do_agente_aqui" se precisar passar o bastão.
+    }} 
 
 
 task_follow_up:

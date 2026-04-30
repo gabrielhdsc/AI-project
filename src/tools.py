@@ -4,24 +4,32 @@ from crewai.tools import tool
 @tool("Consultar Estoque e Precos")
 def consult_catalog(search_term: str) -> str:
     """
-    Use esta ferramenta SEMPRE que o cliente perguntar sobre produtos, serviços, preços ou o que o petshop vende.
-    Passe um termo de pesquisa curto (ex: 'ração', 'banho', 'gold').
-    A ferramenta retorna os detalhes, preços e se o item está em estoque.
+    Use esta ferramenta SEMPRE para pesquisar sobre produtos, serviços, preços no catálogo ou o que o petshop vende.
+    REGRA DE OURO: Pesquise usando apenas UMA ou DUAS palavras-chave simples por vez (ex: 'racao', 'cachorro', 'gato', 'consulta', 'banho'). 
+    Nunca pesquise frases inteiras como 'produto cachorro'.
     """
     print(f"\n[SISTEMA] A IA está pesquisando no catálogo por: '{search_term}'...")
     
     # Consult catalog in real-time
     try:
         with open('src/catalogo.json', 'r', encoding='utf-8') as f:
-            dados = json.load(f)
+            data = json.load(f)
     except FileNotFoundError:
         return "Erro: Sistema de catálogo fora do ar."
   
-    resultados = []
+    results = []
     
+    # Split words used in AI search ("produto cachorro" turns into ["produto", "cachorro"])
+    search_words = search_term.lower().split()
+
+
     # Search the term in catalog. Ignore upper case
-    for item in dados['itens']:
-        if search_term.lower() in item['nome'].lower() or search_term.lower() in item['categoria']:
+    for item in data['itens']:
+        # Put all item information togheter
+        item_text = f"{item['nome']} {item['categoria']} {item['detalhes']} {item['id']}".lower()
+
+        # Verifies if at least one search_words matches with the words from item_text
+        if any(text in item_text for text in search_words):
             status = "SIM" if item['em_estoque'] else "ESGOTADO"
             
             info = (
@@ -31,10 +39,10 @@ def consult_catalog(search_term: str) -> str:
                 f"Detalhes: {item['detalhes']}\n"
                 f"Dica de Venda: {item['objecoes']}\n"
             )
-            resultados.append(info)
+            results.append(info)
 
     # Return the result 
-    if resultados:
-        return "\n---\n".join(resultados)
+    if results:
+        return "\n---\n".join(results)
     else:
         return f"Não encontramos nenhum item correspondente a '{search_term}' no catálogo. Diga ao cliente que não temos."
