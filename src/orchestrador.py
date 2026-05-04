@@ -2,6 +2,7 @@
 # Parses the AI's JSON response, and routes the execution to the correct specialized agent
 
 import json
+import re 
 from crewai import Crew
 from settings import salesperson, classifier, support, post_sales
 from task_builder import task_sales, task_followup, task_classifier, task_support, task_post_sales
@@ -27,14 +28,23 @@ def run_crew(agent, task):
 
 def parse_json(response):
     """
-    Try to convert AI string to a python dictionary format. Return None if fails
+    Try to convert AI string to a python dictionary format using Regex to extract the JSON block. Return None if fails
     """
+    text = str(response)
     try:
+        match = re.search(r'\{.*\}', text, re.DOTALL)
         # LLMs sometimes wrap JSON with markdown ```json blocks. Clean them for safety
-        clean_text = str(response).replace("```json", "").replace("```", "").strip()
-        return json.loads(clean_text)
+
+        if match:
+            clean_json = match.group(0)
+            return json.loads(clean_json)
+        
+        else:
+            print("⚠️ Regex não encontrou chaves {} na resposta.")
+            return None
     
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(f"⚠️ Erro no JSON Decode: {e}")
         return None
 
 

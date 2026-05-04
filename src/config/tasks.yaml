@@ -56,8 +56,12 @@ task_support:
     Mensagem do cliente: "{message}"
     O cliente tem uma dúvida operacional ou problema. Responda com clareza e empatia.
   expected_output: >
-    Uma mensagem prestativa resolvendo a dúvida. Sem tentar vender produtos. 
-    Se for uma reclamação grave ou algo fora do seu conhecimento, insira a tag [HANDOFF].
+    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra.
+     A estrutura DEVE ser estritamente esta:
+        {{
+          "mensagem": "Uma mensagem prestativa resolvendo a dúvida. Sem tentar vender produtos. Se for uma reclamação grave ou algo fora do seu conhecimento, insira a tag [HANDOFF]."
+          "transferir_para": null ou "nome_do_agente_aqui" se precisar passar o bastão.
+        }}
 
 
 task_post_sales:
@@ -66,5 +70,14 @@ task_post_sales:
     Histórico da conversa: {history}
     Sua tarefa é fazer o acompanhamento (pós-venda) para garantir a satisfação.
   expected_output: >
-    Uma mensagem carinhosa perguntando como o pet se adaptou ao produto ou se gostou do serviço. 
-    Termine com uma pergunta leve para manter a conversa aberta.
+    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra.
+        
+        A estrutura DEVE ser estritamente esta:
+        {{
+          "mensagem": "Sua mensagem carinhosa perguntando como o pet se adaptou ao produto ou se gostou do serviço. Termine com uma pergunta leve para manter a conversa aberta.",
+          "transferir_para": null
+        }}
+
+        REGRAS DE TRANSFERÊNCIA:
+        1. Se o cliente demonstrar interesse em comprar um novo produto, saber preço ou agendar um novo serviço, VOCÊ NÃO VENDE. Deixe a "mensagem" em branco e devolva "transferir_para": "sales".
+        2. Se o cliente relatar um problema, erro, insatisfação, alergia no pet ou dúvida operacional complexa, VOCÊ NÃO RESOLVE. Deixe a "mensagem" em branco e devolva "transferir_para": "support"
