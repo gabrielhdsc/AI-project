@@ -1,26 +1,94 @@
 {
-    "servico": {
-        "nome": "Banho para Cães",
-        "preco": "R$ 60,00 (Pequeno porte) | R$ 80,00 (Médio) | R$ 100,00 (Grande)",
-        "vantagens": "Banho com shampoo hipoalergênico, secagem, limpeza de ouvidos e corte de unhas.",
-        "regras": "Atendemos apenas com agendamento prévio. Obrigatório apresentar carteira de vacinação em dia. Não aceitamos cães com histórico de agressividade extrema sem focinheira.",
-        "beneficios_para_venda": "Usamos toalhas esterilizadas, água em temperatura controlada e secador silencioso para reduzir o estresse do animal.",
-        "objecoes_comuns": {
-            "ta_caro": "Nosso valor inclui limpeza de ouvidos e corte de unhas, além de produtos hipoalergênicos que evitam problemas de pele no seu pet, economizando com veterinário no futuro.",
-            "meu_cachorro_tem_medo": "Nossa equipe é treinada em manejo calmo (fear-free) e o ambiente é preparado para ser o menos estressante possível."
-        }
+  "itens": [
+    {
+      "id": "racao_gold_caes",
+      "categoria": "produto",
+      "nome": "Ração Super Premium Gold Cães 15kg",
+      "preco": "R$ 180,00",
+      "em_estoque": true,
+      "detalhes": "Ração rica em ômega 3 e 6. Promocao: Na compra, ganha 10% de desconto no primeiro banho.",
+      "objecoes": "Se achar caro, explique que a alta palatabilidade rende mais que rações comuns e reduz fezes."
     },
-
-
-"produto_racao": {
-        "nome": "Ração Super Premium (Pacote 15kg)",
-        "marca": "Gold",
-        "preco": "R$ 180,00",
-        "promocao_atual": "Na compra da ração, ganha 10% de desconto no primeiro banho.",
-        "regras": "Entrega grátis em num raio de 5km. Acima disso, taxa fixa de R$ 10,00.",
-        "beneficios_para_venda": "Ração rica em ômega 3 e 6 para pelos brilhantes, extrato de yucca que reduz o odor das fezes e sem corantes artificiais.",
-        "objecoes_comuns": {
-            "meu_cachorro_nao_come_qualquer_uma": "Essa linha tem alta palatabilidade, desenvolvida especificamente para cães exigentes."
-        }
+    {
+      "id": "racao_gold_gatos",
+      "categoria": "produto",
+      "nome": "Ração Gold Premium Gatos Castrados 10kg",
+      "preco": "R$ 160,00",
+      "em_estoque": false,
+      "detalhes": "Focada em controle de peso e saúde do trato urinário dos felinos.",
+      "objecoes": "Se o cliente pedir, peça desculpas informando que esgotou, mas que a nova remessa chega na sexta-feira. Pergunte se quer reservar."
+    },
+    {
+      "id": "sache_royal",
+      "categoria": "produto",
+      "nome": "Sachê Royal Canin (Cães ou Gatos) 85g",
+      "preco": "R$ 8,50 cada",
+      "em_estoque": true,
+      "detalhes": "Alimento úmido de alta absorção. Ótimo para misturar com a ração seca.",
+      "objecoes": "Ofereça proativamente como 'mimo' ou estimulante de apetite se o cliente comprar ração seca."
+    },
+    {
+      "id": "tapete_higienico",
+      "categoria": "produto",
+      "nome": "Tapete Higiênico Super Absorvente (Pacote 30 un.)",
+      "preco": "R$ 65,00",
+      "em_estoque": true,
+      "detalhes": "Possui fitas adesivas nas pontas e gel antiodor. Dura até 48h sem cheiro.",
+      "objecoes": "Se achar caro em relação ao jornal comum, foque na eliminação do odor na casa e no fato de não manchar o piso."
+    },
+    {
+      "id": "coleira_seresto",
+      "categoria": "produto",
+      "nome": "Coleira Antipulgas Seresto",
+      "preco": "R$ 250,00",
+      "em_estoque": true,
+      "detalhes": "Proteção contínua por até 8 meses contra pulgas e carrapatos. Resistente à água.",
+      "objecoes": "O valor assusta no primeiro momento, mas ensine o cliente a dividir por 8 meses (custa cerca de R$ 31/mês), saindo mais barato que remédios de dose única mensais."
+    },
+    {
+      "id": "brinquedo_kong",
+      "categoria": "produto",
+      "nome": "Brinquedo Kong Classic (Médio)",
+      "preco": "R$ 95,00",
+      "em_estoque": true,
+      "detalhes": "Feito de borracha ultrarresistente. Pode ser recheado com sachê e congelado para enriquecimento ambiental.",
+      "objecoes": "Indique fortemente para clientes que dizem que o cachorro é muito agitado, destrói móveis ou tem ansiedade de separação."
+    },
+    {
+      "id": "banho_caes",
+      "categoria": "servico",
+      "nome": "Banho Premium para Cães",
+      "preco": "Pequeno R$60 | Médio R$80 | Grande R$100",
+      "em_estoque": true,
+      "detalhes": "Inclui shampoo hipoalergênico, secagem sem estresse, limpeza de ouvidos e corte de unhas.",
+      "objecoes": "Obrigatório agendamento. Se o cliente falar que o cão tem medo, destaque nosso ambiente 'fear-free' (livre de medo) e água aquecida."
+    },
+    {
+      "id": "tosa_higienica",
+      "categoria": "servico",
+      "nome": "Tosa Higiênica",
+      "preco": "R$ 30,00",
+      "em_estoque": true,
+      "detalhes": "Limpeza e tosa apenas da região da barriga, patinhas e área íntima. Ajuda a evitar escorregões no piso.",
+      "objecoes": "Excelente para oferecer junto com o Banho. Explique que não altera o tamanho do pelo do corpo, é só para higiene."
+    },
+    {
+      "id": "tosa_completa",
+      "categoria": "servico",
+      "nome": "Tosa Completa (Máquina ou Tesoura)",
+      "preco": "A partir de R$ 90,00 (varia por raça e estado do pelo)",
+      "em_estoque": true,
+      "detalhes": "O valor já inclui o Banho Premium. Tosa no padrão da raça ou à escolha do dono.",
+      "objecoes": "Se achar o processo demorado, explique que nosso trabalho é focado no bem-estar e fazemos pausas para não estressar o pet."
+    },
+    {
+      "id": "consulta_vet",
+      "categoria": "servico",
+      "nome": "Consulta Veterinária Básica",
+      "preco": "R$ 150,00",
+      "em_estoque": true,
+      "detalhes": "Avaliação clínica geral. Vacinas são cobradas à parte.",
+      "objecoes": "Se o cliente relatar um problema muito grave, sangramento ou necessidade de cirurgia, use a tag [HANDOFF] para passar para o médico veterinário triar."
     }
+  ]
 }

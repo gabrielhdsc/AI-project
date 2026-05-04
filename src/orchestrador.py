@@ -2,9 +2,21 @@
 # Parses the AI's JSON response, and routes the execution to the correct specialized agent
 
 import json
+import re 
 from crewai import Crew
 from settings import salesperson, classifier, support, post_sales
 from task_builder import task_sales, task_followup, task_classifier, task_support, task_post_sales
+
+# Safety limit to prevent infinite loops between agents (in case they keep redirecting to each other)
+MAX_HANDOFFS = 4
+
+# Map of agent names (strings) to their actual objects and corresponding task builders
+AGENTS_MAP= {
+    "sales" : (salesperson, task_sales),
+    "support" : (support, task_support),
+    "post_sales": (post_sales, task_post_sales)
+}
+
 
 def run_crew(agent, task):
     """
@@ -14,55 +26,147 @@ def run_crew(agent, task):
     return Crew(agents=[agent], tasks=[task]).kickoff()
 
 
+def parse_json(response):
+    """
+    Try to convert AI string to a python dictionary format using Regex to extract the JSON block. Return None if fails
+    """
+    text = str(response)
+    try:
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        # LLMs sometimes wrap JSON with markdown ```json blocks. Clean them for safety
+
+        if match:
+            clean_json = match.group(0)
+            return json.loads(clean_json)
+        
+        else:
+            print("⚠️ Regex não encontrou chaves {} na resposta.")
+            return None
+    
+    except json.JSONDecodeError as e:
+        print(f"⚠️ Erro no JSON Decode: {e}")
+        return None
+
+
+def fallback_to_classifier(event_data):
+    """Safety net: If something goes wrong, we ask the classifier to re-decide the flow."""
+
+    print("⚠️ [FALLBACK] JSON quebrado ou vazio. Retornando ao classificador...")
+
+    # Re-run classifier to recover from failure
+    task_class = task_classifier(event_data)
+    class_response = run_crew(classifier, task_class)
+
+    decision = parse_json(class_response)
+
+    if not decision:
+        # Hard failure: even classifier failed → return generic error
+        return "Erro interno de comunicação. Por favor, tente novamente.", "classifier"
+
+    # Extract next agent decision (default to classifier)
+    next_agent = decision.get("next_agent", "classifier")
+
+    # Classifier decides to stay in itself (greeting)
+    if next_agent == "classifier":
+        return decision.get("msg_to_client", "Como posso te ajudar hoje?"), "classifier"
+
+    # classifier identified a valid next agent, update state
+    event_data["current_agent"] = next_agent
+
+    # Re-enter orchestrator with updated state
+    return orchestrate("new_message", event_data)
+
+
 def orchestrate(event_type, event_data):
     """
-    Handles different types of system events.
+    Handles different types of system events, manage AI calling and loops block.
     """
+
+    # Retrieve current agent from session state (Defaults to "classifier" if no agent is assigned yet)
+    current_agent = event_data.get("current_agent", "classifier")
+
+    # Initialize or persist handoff counter
+    event_data["handoff_count"] = event_data.get("handoff_count", 0)
+
+    # Loop protection
+    if event_data["handoff_count"] > MAX_HANDOFFS:
+        print("🚨 [ALERTA] Loop de Handoff detectado. Encerrando automação.")
+        return "Preciso de mais ajuda com isso. Vou te encaminhar para um atendente humano.", "human"
+
+
     if event_type == "new_message":
 
-        # Classifier reads the message and output a JSON decision
-        task_class = task_classifier(event_data)
-        class_response = run_crew(classifier, task_class)
+        # User is already talking to a specialist agent
+        if current_agent in AGENTS_MAP:
 
-        try:
-            # Convert the AI's string response into a Python Dictionary
-            decision = json.loads(str(class_response))
+            # Retrieve actual agent object and its task builder
+            agent_object, task_fn = AGENTS_MAP[current_agent]
 
-        except json.JSONDecodeError:
-            # Security Fallback in case AI miss the JSON format
-            return "Erro: O agente classificador se confundiu. Tente novamente."
+            # Build task using current conversation context, run agent and parse structured JSON response
+            task = task_fn(event_data)
+            response = run_crew(agent_object, task)
+            ai_data = parse_json(response)
+
+            # Fallback if AI failed to return valid JSON
+            if not ai_data:
+                return fallback_to_classifier(event_data)
+
+            # Extract structured fields
+            transfer_to = ai_data.get("transferir_para")
+            mensagem = ai_data.get("mensagem")
 
 
-        # Execute based on AI decision ("next_agent" key from the JSON)
-        if decision["next_agent"] == "classifier":
-            # Classifier did not identify the client needs. The classifier generated a greeting. Return it directly to UI
-            return decision["msg_to_client"]
-            
-        elif decision["next_agent"] == "sales":
-            # Classifier identify a sale. Call the sales task and the sales agent
-            task = task_sales(event_data)
-            return run_crew(salesperson, task)
-            
-        elif decision["next_agent"] == "support":
-            # Classifier identify a doubt/complaint. Call the support agent
-            task = task_support(event_data)
-            return run_crew(support, task)
+            # HANDOFF: Agent wants to transfer context
+            if transfer_to and transfer_to in AGENTS_MAP:
+                print(f"🔄 Handoff Autônomo: {current_agent} -> {transfer_to}")
+                event_data["current_agent"] = transfer_to
+                event_data["handoff_count"] += 1
+                return orchestrate("new_message", event_data) # Re-run orchestrator with new agent
+                
+            # HANDOFF to human
+            if transfer_to == "human":
+                return "[HANDOFF] Transferindo para um atendente humano.", "human"
 
-        elif decision["next_agent"] == "human":
-            # The client is angry or wants a human. Return the trigger tag.
-            # The interface.py will intercept this specific string and activate the handoff.
-            return "[HANDOFF] Transferindo para um atendente humano."
+            # Normal response
+            if mensagem:
+                return mensagem, current_agent
+
+            # Fallback if empty response and no transfer
+            return fallback_to_classifier(event_data)
+
+
+        # First interaction: classifier decides
+        else:
+            # Run classifier agent and parse its decision
+            task_class = task_classifier(event_data)
+            class_response = run_crew(classifier, task_class)
+            decision = parse_json(class_response)
+
+            if not decision:
+                return "Erro: O classificador falhou.", "classifier"
+
+            # Extract routing decision
+            next_agent = decision.get("next_agent", "classifier")
+
+            # no routing ( Classifier just greets)
+            if next_agent == "classifier":
+                return decision.get("msg_to_client", "Olá! Como posso ajudar?"), "classifier"
+
+            # Update agent and re-enter orchestrator
+            event_data["current_agent"] = next_agent
+            return orchestrate("new_message", event_data)
 
 
     # Follow_up task is triggered by a CRM when a lead goes cold (simulated button)
     elif event_type == "inactive_lead":
         task = task_followup(event_data)
-        return run_crew(salesperson, task)
+        return str(run_crew(salesperson, task)), "sales"
 
     # post_sales task is triggered by a CRM after a service is done (simulated button)
     elif event_type == "post_sales":
-        task = task_post_sales(event_data)
-        return run_crew(post_sales, task)
+        event_data["current_agent"] = "post_sales"
+        event_data["message"] = ""
+        return orchestrate("new_message", event_data)
 
     # Fallback if an unknown event is sent to the orchestrator
     return "Erro: Tipo de evento desconhecido."
