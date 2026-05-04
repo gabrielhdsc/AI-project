@@ -35,6 +35,7 @@ body, .gradio-container {
 .wa-header h1 {
     margin: 0;
     font-size: 1.2rem;
+    color: #ffffff !important;
 }
 .wa-header .wa-subtitle {
     color: #d8eae3;
@@ -43,6 +44,8 @@ body, .gradio-container {
 }
 .wa-chat-panel {
     background: #f0f0f0;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-repeat: repeat;
     border-radius: 32px;
     padding: 18px;
     min-height: 560px;
@@ -80,6 +83,7 @@ body, .gradio-container {
     padding: 12px 16px;
     margin-bottom: 10px;
     max-width: 72%;
+    width: fit-content !important;
 }
 .gr-chatbot .message.user,
 .chatbot .message.user {
@@ -94,6 +98,7 @@ body, .gradio-container {
 .gr-chatbot .message .content,
 .chatbot .message .content {
     white-space: pre-wrap;
+    word-break: break-word;
 }
 .gr-chatbot .message .metadata,
 .chatbot .message .metadata {
@@ -221,7 +226,8 @@ def build_interface():
                         message_box = gr.Textbox(
                             show_label=False,
                             placeholder="Digite sua mensagem...",
-                            lines=2,
+                            lines=1,
+                            max_lines=4,
                             elem_classes="wa-input-box",
                             scale=4
                         )
