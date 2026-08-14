@@ -1,83 +1,75 @@
-# Define specif instructions for a given moment, jobs and expected outputs (What they do)
-# Contains dynamic fields filled with conversation data
+# Instruções específicas para cada tarefa. Os campos entre chaves são preenchidos em tempo de execução.
 
 task_classifier:
   description: >
     Histórico da conversa: {history}
     Nova mensagem do cliente: "{message}"
 
-    Sua tarefa é descobrir o que o cliente quer. 
-    1. Se ele só disse "Oi", cumprimente e pergunte como pode ajudar.
-    2. Se ele expressou intenção de comprar/agendar, direcione para "vendas".
-    3. Se ele tem uma dúvida de horário, entrega ou reclamação, direcione para "suporte".
-    4. Se o cliente xingar, for agressivo ou pedir explicitamente para falar com um humano, direcione para "human".
+    Descubra o que o cliente precisa.
+    1. Se ele só cumprimentou, cumprimente e pergunte como pode ajudar.
+    2. Se demonstrar intenção de comprar ou agendar, direcione para "sales".
+    3. Se tiver dúvida sobre horário, entrega, troca ou reclamação, direcione para "support".
+    4. Se for agressivo ou pedir um atendente humano, direcione para "human".
   expected_output: >
-    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra, com a seguinte estrutura:
+    Retorne APENAS um objeto JSON válido, sem Markdown:
     {{
-      "msg_to_client": "Sua resposta amigável aqui (ou deixe em branco se for passar direto para outro agente)",
-      "next_agent": "classifier" | "sales" | "support" | "human"
+      "msg_to_client": "resposta curta ao cliente, ou vazia quando houver encaminhamento",
+      "next_agent": "sales"
     }}
-
+    Valores aceitos para "next_agent": "classifier", "sales", "support" e "human".
 
 task_sales:
   description: >
-    Hisórico da conversa com este cliente até agora: {history}
-    O cliente enviou a seguinte mensagem no WhatsApp: "{message}".
-    Baseado no seu papel e no seu histórico, contorne objeções se houver e conduza o cliente para o fechamento da compra ou agendamento do serviço.
-    Se o cliente perguntar sobre produtos ou preços, use sua ferramenta de pesquisa antes de responder.
+    Histórico da conversa: {history}
+    Mensagem recebida no WhatsApp: "{message}"
 
-    Ajuste o tom com base no contexto:
-    - Se o cliente está explorando: seja leve e informativo
-    - Se está decidido: seja direto e objetivo
-    - Se está inseguro: seja acolhedor e explicativo
+    Com base no contexto, responda de forma curta e conduza a conversa para a compra ou o agendamento.
+    Se a pergunta envolver produtos, serviços, preços ou disponibilidade, use a ferramenta de catálogo antes de responder.
+    Para exploração, seja leve e informativo; para decisão, seja objetivo; para insegurança, seja acolhedor e explicativo.
   expected_output: >
-    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra, com a seguinte estrutura:
+    Retorne APENAS um objeto JSON válido, sem Markdown:
     {{
-      "mensagem": Uma mensagem persuasiva com formatação de WhatsApp (asteriscos para negrito, uso de emojis bem moderados), focada em destacar o valor do serviço/produto e finalizando com um CTA (Call to Action) claro para fechar a venda.
-      "transferir_para": null ou "nome_do_agente_aqui" se precisar passar o bastão.
-    }} 
-
+      "mensagem": "mensagem curta, natural e com CTA quando apropriado",
+      "transferir_para": null
+    }}
+    Valores aceitos para "transferir_para": null, "sales", "support", "post_sales" e "human".
 
 task_follow_up:
   description: >
-    O cliente parou de responder faz 24 horas. 
-    Aqui está o histórico da conversa até o momento:
-    {history}
-    Baseado na última interação do cliente, gere uma mensagem para ele.
+    O cliente parou de responder há 24 horas.
+    Histórico da conversa: {history}
+    Gere uma mensagem que continue o assunto da última interação.
   expected_output: >
-    Uma mensagem curta (máx 2 linhas), amigável e com pergunta simples para reengajar.
-    Use senso de urgência leve. Nunca recomece a conversa do zero, continue do assunto anterior.
-
+    Uma mensagem curta, de no máximo duas linhas, amigável, com uma pergunta simples para reengajar.
+    Use urgência leve e não recomece a conversa do zero.
 
 task_support:
   description: >
     Informações da loja: {info_store}
     Histórico da conversa: {history}
     Mensagem do cliente: "{message}"
-    O cliente tem uma dúvida operacional ou problema. Responda com clareza e empatia.
-  expected_output: >
-    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra.
-     A estrutura DEVE ser estritamente esta:
-        {{
-          "mensagem": "Uma mensagem prestativa resolvendo a dúvida. Sem tentar vender produtos. Se for uma reclamação grave ou algo fora do seu conhecimento, insira a tag [HANDOFF]."
-          "transferir_para": null ou "nome_do_agente_aqui" se precisar passar o bastão.
-        }}
 
+    Resolva dúvidas operacionais com clareza e empatia. Não tente vender produtos.
+    Para reclamações graves ou assuntos fora do seu conhecimento, encaminhe para um humano.
+  expected_output: >
+    Retorne APENAS um objeto JSON válido, sem Markdown:
+    {{
+      "mensagem": "resposta prestativa, ou vazia se houver encaminhamento",
+      "transferir_para": null
+    }}
+    Valores aceitos para "transferir_para": null, "sales", "post_sales" e "human".
 
 task_post_sales:
   description: >
-    O serviço/venda foi concluído recentemente.
+    Uma venda ou serviço foi concluído recentemente.
     Histórico da conversa: {history}
-    Sua tarefa é fazer o acompanhamento (pós-venda) para garantir a satisfação.
+    Faça um acompanhamento carinhoso para verificar a satisfação e termine com uma pergunta leve.
+    Se houver interesse em nova compra, preço ou agendamento, encaminhe para "sales".
+    Para problema, insatisfação, alergia ou dúvida operacional complexa, encaminhe para "support".
   expected_output: >
-    Você DEVE retornar APENAS um objeto JSON válido, sem formatação markdown extra.
-        
-        A estrutura DEVE ser estritamente esta:
-        {{
-          "mensagem": "Sua mensagem carinhosa perguntando como o pet se adaptou ao produto ou se gostou do serviço. Termine com uma pergunta leve para manter a conversa aberta.",
-          "transferir_para": null
-        }}
-
-        REGRAS DE TRANSFERÊNCIA:
-        1. Se o cliente demonstrar interesse em comprar um novo produto, saber preço ou agendar um novo serviço, VOCÊ NÃO VENDE. Deixe a "mensagem" em branco e devolva "transferir_para": "sales".
-        2. Se o cliente relatar um problema, erro, insatisfação, alergia no pet ou dúvida operacional complexa, VOCÊ NÃO RESOLVE. Deixe a "mensagem" em branco e devolva "transferir_para": "support"
+    Retorne APENAS um objeto JSON válido, sem Markdown:
+    {{
+      "mensagem": "mensagem de pós-venda, ou vazia se houver encaminhamento",
+      "transferir_para": null
+    }}
+    Valores aceitos para "transferir_para": null, "sales" e "support".

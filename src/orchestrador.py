@@ -70,6 +70,12 @@ def fallback_to_classifier(event_data):
     if next_agent == "classifier":
         return decision.get("msg_to_client", "Como posso te ajudar hoje?"), "classifier"
 
+    if next_agent == "human":
+        return "[HANDOFF] Transferindo para um atendente humano.", "human"
+
+    if next_agent not in AGENTS_MAP:
+        return "Erro interno de roteamento. Por favor, tente novamente.", "classifier"
+
     # classifier identified a valid next agent, update state
     event_data["current_agent"] = next_agent
 
@@ -151,6 +157,12 @@ def orchestrate(event_type, event_data):
             # no routing ( Classifier just greets)
             if next_agent == "classifier":
                 return decision.get("msg_to_client", "Olá! Como posso ajudar?"), "classifier"
+
+            if next_agent == "human":
+                return "[HANDOFF] Transferindo para um atendente humano.", "human"
+
+            if next_agent not in AGENTS_MAP:
+                return "Erro interno de roteamento. Por favor, tente novamente.", "classifier"
 
             # Update agent and re-enter orchestrator
             event_data["current_agent"] = next_agent
